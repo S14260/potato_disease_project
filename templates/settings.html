@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block title %}系统设置 - 智慧农业病害诊断平台{% endblock %}
+{% block topbar_title %}系统设置{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">系统设置</h1>
+    <p class="page-desc">系统配置信息和运行状态</p>
+</div>
+
+<div class="grid grid-2">
+    <!-- 模型配置 -->
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title">模型配置</span>
+        </div>
+        <div class="card-body">
+            <div style="margin-bottom:16px;">
+                <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">目标检测模型</div>
+                <div style="font-size:14px;font-weight:600;">YOLOv8n</div>
+            </div>
+            <div style="margin-bottom:16px;">
+                <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">模型权重文件</div>
+                <div style="font-size:14px;font-family:monospace;">models/best.pt</div>
+            </div>
+            <div style="margin-bottom:16px;">
+                <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">检测类别</div>
+                <div style="display:flex;gap:6px;">
+                    <span class="tag tag-orange">early_blight</span>
+                    <span class="tag tag-blue">late_blight</span>
+                </div>
+            </div>
+            <div>
+                <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">输入尺寸</div>
+                <div style="font-size:14px;">640 x 640</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- LLM 配置 -->
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title">LLM 配置</span>
+        </div>
+        <div class="card-body">
+            <div style="margin-bottom:16px;">
+                <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">LLM 模型</div>
+                <div style="font-size:14px;font-weight:600;">mimo-v2.5-pro</div>
+            </div>
+            <div style="margin-bottom:16px;">
+                <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">API 端点</div>
+                <div style="font-size:14px;font-family:monospace;">token-plan-cn.xiaomimimo.com</div>
+            </div>
+            <div style="margin-bottom:16px;">
+                <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">Agent 框架</div>
+                <div style="font-size:14px;">LangGraph + LangChain</div>
+            </div>
+            <div>
+                <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">向量数据库</div>
+                <div style="font-size:14px;">ChromaDB + BAAI/bge-small-zh-v1.5</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 系统信息 -->
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title">系统信息</span>
+        </div>
+        <div class="card-body">
+            <div style="margin-bottom:16px;">
+                <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">系统版本</div>
+                <div style="font-size:14px;">v2.0.0</div>
+            </div>
+            <div style="margin-bottom:16px;">
+                <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">Web 框架</div>
+                <div style="font-size:14px;">Flask</div>
+            </div>
+            <div style="margin-bottom:16px;">
+                <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">知识库</div>
+                <div style="font-size:14px;">2 种病害，6 种药剂，6 套 SOP</div>
+            </div>
+            <div>
+                <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">气象 API</div>
+                <div style="font-size:14px;">OpenWeatherMap</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 气象 API 配置 -->
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title">气象 API</span>
+        </div>
+        <div class="card-body">
+            <div style="margin-bottom:16px;">
+                <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">服务提供商</div>
+                <div style="font-size:14px;font-weight:600;">OpenWeatherMap</div>
+            </div>
+            <div style="margin-bottom:16px;">
+                <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">支持城市</div>
+                <div style="font-size:14px;">20 个中国主要城市</div>
+            </div>
+            <div>
+                <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">返回数据</div>
+                <div style="font-size:14px;">温度、湿度、天气描述、降雨判断</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

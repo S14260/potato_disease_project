@@ -1,0 +1,48 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# YOLO training outputs
+runs/
+
+# Uploaded files
+static/uploads/*
+static/results/*
+!static/uploads/.gitkeep
+!static/results/.gitkeep
+
+# Logs
+logs/*.json
+
+# Environment variables
+.env
+
+# Pytest
+.pytest_cache/
+
+# ChromaDB data
+chroma_db/
+
+# HuggingFace cache
+.cache/

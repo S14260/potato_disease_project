@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+
+{% block title %}病害知识库 - 智慧农业病害诊断平台{% endblock %}
+{% block topbar_title %}病害知识库{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">病害知识库</h1>
+    <p class="page-desc">马铃薯常见病害的症状、发病条件、防治方法</p>
+</div>
+
+<div style="display:grid;grid-template-columns:240px 1fr;gap:16px;">
+    <!-- 左侧：病害列表 -->
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title">病害列表</span>
+        </div>
+        <div class="card-body" style="padding:8px;">
+            {% for disease_id, info in diseases.items() %}
+            <a href="/knowledge?disease={{ disease_id }}" class="nav-item {% if selected_disease == disease_id %}active{% endif %}" style="margin:0;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 20h10"/><path d="M10 20c5.5-2.5 8-6.5 8-12a1 1 0 0 0-1.25-.97C13.81 8.02 10.38 10.78 8.55 14.25"/></svg>
+                {{ info.name }}
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- 右侧：病害详情 -->
+    <div>
+        {% if selected_info %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <span class="card-title">{{ selected_info.name }}</span>
+                <span class="tag tag-blue">{{ selected_info.type }}</span>
+            </div>
+            <div class="card-body">
+                <div class="grid grid-2" style="gap:16px;">
+                    <div>
+                        <div style="font-size:13px;color:var(--text-muted);margin-bottom:4px;">病原体</div>
+                        <div style="font-size:14px;font-style:italic;">{{ selected_info.pathogen }}</div>
+                    </div>
+                    <div>
+                        <div style="font-size:13px;color:var(--text-muted);margin-bottom:4px;">推荐药剂</div>
+                        <div style="display:flex;flex-wrap:wrap;gap:4px;">
+                            {% for p in selected_info.recommended_pesticides %}
+                            <span class="tag tag-green">{{ p }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 症状 -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <span class="card-title">发病症状</span>
+            </div>
+            <div class="card-body">
+                <div class="grid grid-3" style="gap:12px;">
+                    <div style="padding:12px;background:var(--bg-main);border-radius:var(--radius);">
+                        <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">叶片</div>
+                        <div style="font-size:13px;">{{ selected_info.symptom.leaf }}</div>
+                    </div>
+                    <div style="padding:12px;background:var(--bg-main);border-radius:var(--radius);">
+                        <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">茎部</div>
+                        <div style="font-size:13px;">{{ selected_info.symptom.stem }}</div>
+                    </div>
+                    <div style="padding:12px;background:var(--bg-main);border-radius:var(--radius);">
+                        <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">块茎</div>
+                        <div style="font-size:13px;">{{ selected_info.symptom.tuber }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 发病条件 -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <span class="card-title">发病条件</span>
+            </div>
+            <div class="card-body">
+                <div class="grid grid-2" style="gap:12px;">
+                    <div style="padding:12px;background:var(--bg-main);border-radius:var(--radius);">
+                        <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">适宜温度</div>
+                        <div style="font-size:14px;font-weight:600;">{{ selected_info.risk_environment.temperature.min }}-{{ selected_info.risk_environment.temperature.max }}℃</div>
+                    </div>
+                    <div style="padding:12px;background:var(--bg-main);border-radius:var(--radius);">
+                        <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">高风险湿度</div>
+                        <div style="font-size:14px;font-weight:600;">>{{ selected_info.risk_environment.humidity }}%</div>
+                    </div>
+                </div>
+                <div style="margin-top:12px;">
+                    <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">传播条件</div>
+                    <div style="display:flex;flex-wrap:wrap;gap:6px;">
+                        {% for c in selected_info.spread_conditions %}
+                        <span class="tag tag-orange">{{ c }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div style="margin-top:12px;">
+                    <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">易感生长期</div>
+                    <div style="display:flex;flex-wrap:wrap;gap:6px;">
+                        {% for s in selected_info.sensitive_growth_stage %}
+                        <span class="tag tag-blue">{{ s }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 防治策略 -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <span class="card-title">防治策略</span>
+            </div>
+            <div class="card-body">
+                <div class="grid grid-3" style="gap:12px;">
+                    {% for level, actions in selected_info.treatment_strategy.items() %}
+                    <div style="padding:12px;background:var(--bg-main);border-radius:var(--radius);">
+                        <div style="font-size:12px;font-weight:600;margin-bottom:8px;color:{% if level == 'high_risk' %}var(--danger){% elif level == 'medium_risk' %}var(--warning){% else %}var(--success){% endif %};">
+                            {% if level == 'high_risk' %}高风险{% elif level == 'medium_risk' %}中风险{% else %}低风险{% endif %}
+                        </div>
+                        <ul style="padding-left:16px;font-size:13px;line-height:1.8;">
+                            {% for action in actions %}
+                            <li>{{ action }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- 推荐药剂详情 -->
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">推荐药剂详情</span>
+            </div>
+            <div class="card-body" style="padding:0;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>药剂名称</th>
+                            <th>有效成分</th>
+                            <th>类型</th>
+                            <th>浓度</th>
+                            <th>间隔</th>
+                            <th>安全注意</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in pesticides %}
+                        {% if p.disease_id == selected_disease %}
+                        <tr>
+                            <td style="font-weight:600;">{{ p.name }}</td>
+                            <td>{{ p.ingredient }}</td>
+                            <td><span class="tag tag-blue">{{ p.type }}</span></td>
+                            <td>{{ p.dosage }}</td>
+                            <td>{{ p.interval }}</td>
+                            <td style="font-size:12px;color:var(--text-muted);">{{ p.safety }}</td>
+                        </tr>
+                        {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,9 @@
+path: F:/python/py_projects/potato_disease_project/dataset
+
+train: images/train
+val: images/val
+
+names:
+  0: early_blight
+  1: late_blight
+  2: healthy

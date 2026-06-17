@@ -1,0 +1,1075 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<meta charset="utf-8">
+
+<title>智慧农业病害诊断平台</title>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family:Arial;
+    background:linear-gradient(135deg,#0f172a,#111827,#1e293b);
+    color:white;
+    min-height:100vh;
+}
+
+.container{
+    width:1400px;
+    margin:auto;
+    padding:30px;
+}
+
+.header{
+    text-align:center;
+    margin-bottom:40px;
+}
+
+.title{
+    font-size:48px;
+    font-weight:bold;
+    color:#38bdf8;
+}
+
+.subtitle{
+    color:#94a3b8;
+    margin-top:10px;
+}
+
+.card{
+    background:#0f172a;
+    border:1px solid #334155;
+    border-radius:18px;
+    padding:24px;
+    margin-bottom:24px;
+    box-shadow:0 8px 30px rgba(0,0,0,0.35);
+}
+
+.section-title{
+    font-size:24px;
+    color:#38bdf8;
+    margin-bottom:18px;
+}
+
+.dashboard{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:18px;
+    margin-bottom:24px;
+}
+
+.stat{
+    background:#111827;
+    border:1px solid #334155;
+    border-radius:16px;
+    padding:22px;
+    text-align:center;
+}
+
+.stat-value{
+    font-size:28px;
+    font-weight:bold;
+    margin-top:10px;
+}
+
+.high{color:#ef4444;}
+.mid{color:#f59e0b;}
+.low{color:#22c55e;}
+
+.result-layout{
+    display:flex;
+    gap:24px;
+    flex-wrap:wrap;
+}
+
+.result-image{flex:1.2;}
+.result-image img{
+    width:100%;
+    max-width:700px;
+    border-radius:16px;
+}
+
+.result-info{flex:1;}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+th,td{
+    border:1px solid #334155;
+    padding:12px;
+    text-align:center;
+}
+
+th{background:#1e293b;}
+
+button{
+    padding:12px 22px;
+    border:none;
+    border-radius:12px;
+    color:white;
+    cursor:pointer;
+    font-size:15px;
+    transition:0.3s;
+}
+
+button:hover{transform:scale(1.03);}
+
+button:disabled{
+    opacity:0.5;
+    cursor:not-allowed;
+    transform:none;
+}
+
+.report{
+    line-height:1.9;
+    color:#cbd5e1;
+}
+
+.report h1,.report h2,.report h3,.report h4{
+    color:#38bdf8;
+    margin:18px 0 10px;
+}
+
+.report h1{font-size:24px;}
+.report h2{font-size:20px;}
+.report h3{font-size:17px;}
+
+.report table{
+    width:100%;
+    border-collapse:collapse;
+    margin:14px 0;
+}
+
+.report th,.report td{
+    border:1px solid #334155;
+    padding:10px 12px;
+    text-align:left;
+    font-size:14px;
+}
+
+.report th{
+    background:#1e293b;
+    color:#38bdf8;
+}
+
+.report ul,.report ol{
+    padding-left:22px;
+    margin:8px 0;
+}
+
+.report li{
+    margin:4px 0;
+}
+
+.report strong{
+    color:#e2e8f0;
+}
+
+.report p{
+    margin:8px 0;
+}
+
+.report hr{
+    border:none;
+    border-top:1px solid #334155;
+    margin:16px 0;
+}
+
+input,select{
+    padding:12px;
+    border-radius:10px;
+    border:1px solid #334155;
+    background:#1e293b;
+    color:white;
+}
+
+.upload-form{
+    display:flex;
+    gap:15px;
+    flex-wrap:wrap;
+    align-items:center;
+}
+
+/* ========== 时间线 ========== */
+
+.timeline-container{
+    display:flex;
+    gap:30px;
+}
+
+.timeline-left{
+    flex:1;
+    min-width:0;
+}
+
+.timeline-right{
+    width:360px;
+    flex-shrink:0;
+}
+
+.timeline{
+    position:relative;
+    padding-left:40px;
+}
+
+.timeline::before{
+    content:'';
+    position:absolute;
+    left:15px;
+    top:0;
+    bottom:0;
+    width:3px;
+    background:#334155;
+    border-radius:2px;
+}
+
+.timeline-item{
+    position:relative;
+    margin-bottom:24px;
+    padding:18px;
+    background:#1e293b;
+    border-radius:14px;
+    border:1px solid #334155;
+    transition:all 0.4s ease;
+}
+
+.timeline-item.completed{
+    border-color:#22c55e;
+    background:linear-gradient(135deg,#052e16,#14532d);
+}
+
+.timeline-item.current{
+    border-color:#38bdf8;
+    background:linear-gradient(135deg,#0c1929,#164e63);
+    box-shadow:0 0 25px rgba(56,189,248,0.15);
+    animation:pulse-border 2s infinite;
+}
+
+@keyframes pulse-border{
+    0%,100%{box-shadow:0 0 15px rgba(56,189,248,0.1);}
+    50%{box-shadow:0 0 30px rgba(56,189,248,0.25);}
+}
+
+.timeline-dot{
+    position:absolute;
+    left:-33px;
+    top:22px;
+    width:18px;
+    height:18px;
+    border-radius:50%;
+    border:3px solid #334155;
+    background:#111827;
+    z-index:1;
+}
+
+.timeline-item.completed .timeline-dot{
+    border-color:#22c55e;
+    background:#22c55e;
+}
+
+.timeline-item.current .timeline-dot{
+    border-color:#38bdf8;
+    background:#38bdf8;
+    animation:pulse-dot 2s infinite;
+}
+
+@keyframes pulse-dot{
+    0%,100%{box-shadow:0 0 0 0 rgba(56,189,248,0.4);}
+    50%{box-shadow:0 0 0 8px rgba(56,189,248,0);}
+}
+
+.timeline-step-label{
+    font-size:12px;
+    color:#64748b;
+    text-transform:uppercase;
+    letter-spacing:1px;
+    margin-bottom:4px;
+}
+
+.timeline-item.current .timeline-step-label{
+    color:#38bdf8;
+}
+
+.timeline-item.completed .timeline-step-label{
+    color:#22c55e;
+}
+
+.timeline-title{
+    font-size:20px;
+    font-weight:bold;
+    margin-bottom:8px;
+}
+
+.timeline-item.current .timeline-title{
+    color:#38bdf8;
+}
+
+.timeline-item.completed .timeline-title{
+    color:#86efac;
+}
+
+.timeline-content{
+    color:#cbd5e1;
+    line-height:1.8;
+    font-size:15px;
+}
+
+.timeline-tips{
+    margin-top:12px;
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+}
+
+.tip-tag{
+    background:#0f172a;
+    border:1px solid #334155;
+    padding:4px 12px;
+    border-radius:20px;
+    font-size:13px;
+    color:#94a3b8;
+}
+
+.timeline-reasoning{
+    margin-top:12px;
+    padding:10px 14px;
+    background:rgba(56,189,248,0.08);
+    border-left:3px solid #38bdf8;
+    border-radius:0 8px 8px 0;
+    font-size:13px;
+    color:#7dd3fc;
+    line-height:1.6;
+}
+
+.timeline-feedback{
+    margin-top:10px;
+    font-size:13px;
+    color:#94a3b8;
+    font-style:italic;
+}
+
+/* ========== 反馈面板 ========== */
+
+.feedback-panel{
+    background:#111827;
+    border:1px solid #334155;
+    border-radius:16px;
+    padding:20px;
+}
+
+.feedback-panel-title{
+    font-size:16px;
+    color:#38bdf8;
+    margin-bottom:14px;
+    font-weight:bold;
+}
+
+.feedback-tags{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-bottom:16px;
+}
+
+.feedback-tag{
+    padding:8px 16px;
+    border-radius:20px;
+    border:1px solid #334155;
+    background:#1e293b;
+    color:#cbd5e1;
+    cursor:pointer;
+    font-size:14px;
+    transition:all 0.3s;
+}
+
+.feedback-tag:hover{
+    border-color:#38bdf8;
+    color:#38bdf8;
+}
+
+.feedback-tag.selected{
+    border-color:#38bdf8;
+    background:rgba(56,189,248,0.15);
+    color:#38bdf8;
+}
+
+.feedback-textarea{
+    width:100%;
+    min-height:80px;
+    padding:12px;
+    border-radius:10px;
+    border:1px solid #334155;
+    background:#1e293b;
+    color:white;
+    font-size:14px;
+    resize:vertical;
+    font-family:inherit;
+    line-height:1.6;
+    margin-bottom:14px;
+}
+
+.feedback-textarea::placeholder{
+    color:#475569;
+}
+
+.submit-btn{
+    width:100%;
+    padding:14px;
+    border:none;
+    border-radius:12px;
+    background:linear-gradient(90deg,#22c55e,#16a34a);
+    color:white;
+    font-size:16px;
+    font-weight:bold;
+    cursor:pointer;
+    transition:all 0.3s;
+}
+
+.submit-btn:hover{
+    transform:scale(1.02);
+    box-shadow:0 4px 20px rgba(34,197,94,0.3);
+}
+
+.submit-btn:disabled{
+    opacity:0.5;
+    cursor:not-allowed;
+    transform:none;
+    box-shadow:none;
+}
+
+/* ========== 进度条 ========== */
+
+.progress-bar-container{
+    margin-bottom:24px;
+}
+
+.progress-info{
+    display:flex;
+    justify-content:space-between;
+    margin-bottom:8px;
+    font-size:14px;
+    color:#94a3b8;
+}
+
+.progress-track{
+    width:100%;
+    height:8px;
+    background:#1e293b;
+    border-radius:4px;
+    overflow:hidden;
+}
+
+.progress-fill{
+    height:100%;
+    background:linear-gradient(90deg,#38bdf8,#22c55e);
+    border-radius:4px;
+    transition:width 0.6s ease;
+}
+
+/* ========== 完成状态 ========== */
+
+.completion-card{
+    text-align:center;
+    padding:50px 30px;
+}
+
+.completion-icon{
+    font-size:64px;
+    margin-bottom:20px;
+}
+
+.completion-title{
+    font-size:28px;
+    color:#22c55e;
+    font-weight:bold;
+    margin-bottom:12px;
+}
+
+.completion-subtitle{
+    color:#94a3b8;
+    font-size:16px;
+    line-height:1.8;
+}
+
+/* ========== Loading ========== */
+
+.loading-spinner{
+    display:inline-block;
+    width:20px;
+    height:20px;
+    border:3px solid rgba(255,255,255,0.3);
+    border-radius:50%;
+    border-top-color:#38bdf8;
+    animation:spin 1s linear infinite;
+    vertical-align:middle;
+    margin-right:8px;
+}
+
+@keyframes spin{
+    to{transform:rotate(360deg);}
+}
+
+/* ========== 历史折叠 ========== */
+
+.history-toggle{
+    background:none;
+    border:1px solid #334155;
+    color:#94a3b8;
+    padding:8px 16px;
+    border-radius:8px;
+    font-size:13px;
+    cursor:pointer;
+    margin-top:10px;
+}
+
+.history-toggle:hover{
+    border-color:#38bdf8;
+    color:#38bdf8;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="header">
+
+<div class="title">智慧农业病害诊断平台</div>
+
+<div class="subtitle">YOLOv8 + RAG + LLM + Dynamic Workflow Agent</div>
+
+</div>
+
+<!-- 上传 -->
+
+<div class="card">
+
+<div class="section-title">上传农作物图片</div>
+
+<form method="post" enctype="multipart/form-data" class="upload-form">
+
+<input type="file" name="file" required>
+
+<select name="location" required>
+
+<option value="">选择地区</option>
+
+<option value="Beijing">北京</option>
+
+<option value="Shanghai">上海</option>
+
+<option value="Guangzhou">广州</option>
+
+<option value="Shenzhen">深圳</option>
+
+<option value="Chengdu">成都</option>
+
+<option value="Wuhan">武汉</option>
+
+<option value="Xi'an">西安</option>
+
+<option value="Harbin">哈尔滨</option>
+
+<option value="Kunming">昆明</option>
+
+<option value="Nanjing">南京</option>
+
+<option value="Changsha">长沙</option>
+
+<option value="Zhengzhou">郑州</option>
+
+<option value="Jinan">济南</option>
+
+<option value="Fuzhou">福州</option>
+
+<option value="Hefei">合肥</option>
+
+<option value="Shenyang">沈阳</option>
+
+<option value="Urumqi">乌鲁木齐</option>
+
+<option value="Lanzhou">兰州</option>
+
+<option value="Hohhot">呼和浩特</option>
+
+<option value="Yinchuan">银川</option>
+
+</select>
+
+<select name="growth_stage">
+
+<option value="seedling">苗期</option>
+
+<option value="vegetative">生长期</option>
+
+<option value="tuber">块茎期</option>
+
+<option value="harvest">成熟期</option>
+
+</select>
+
+<button style="background:linear-gradient(90deg,#06b6d4,#3b82f6);">开始AI诊断</button>
+
+</form>
+
+</div>
+
+{% if result %}
+
+{% set detections = result.get('detections',[]) %}
+{% set info = result.get('info',{}) %}
+{% set env = result.get('environment',{}) %}
+{% set risk_reasons = result.get('risk_reasons',[]) %}
+
+<!-- dashboard -->
+
+<div class="dashboard">
+
+<div class="stat">
+
+<div>病斑数</div>
+
+<div class="stat-value">{{ detections|length }}</div>
+
+</div>
+
+<div class="stat">
+
+<div>风险等级</div>
+
+<div class="stat-value
+{% if result.risk_level=='高风险' %}high
+{% elif result.risk_level=='中风险' %}mid
+{% else %}low{% endif %}">
+{{ result.risk_level }}
+</div>
+
+</div>
+
+<div class="stat">
+
+<div>风险评分</div>
+
+<div class="stat-value">{{ result.risk_score }}</div>
+
+</div>
+
+<div class="stat">
+
+<div>主要病害</div>
+
+<div class="stat-value">{{ info.name }}</div>
+
+</div>
+
+</div>
+
+<!-- YOLO -->
+
+<div class="card">
+
+<div class="section-title">YOLO病害检测结果</div>
+
+<div class="result-layout">
+
+<div class="result-image">
+
+<img src="{{ result.image }}">
+
+</div>
+
+<div class="result-info">
+
+<table>
+
+<tr>
+
+<th>病害类别</th>
+
+<th>置信度</th>
+
+</tr>
+
+{% for d in detections %}
+
+<tr>
+
+<td>{{ d.label }}</td>
+
+<td>{{ d.confidence }}%</td>
+
+</tr>
+
+{% endfor %}
+
+</table>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- 动态工作流 -->
+
+<div class="card">
+
+<div class="section-title">AI农业动态工作流</div>
+
+{% if result.current_task %}
+
+<div id="workflowBox">
+
+<!-- 进度条 -->
+
+<div class="progress-bar-container" id="progressBar">
+
+<div class="progress-info">
+
+<span id="progressText">步骤 1 / {{ result.current_task.total_steps }}</span>
+
+<span id="progressPercent">0%</span>
+
+</div>
+
+<div class="progress-track">
+
+<div class="progress-fill" id="progressFill" style="width:0%"></div>
+
+</div>
+
+</div>
+
+<div class="timeline-container">
+
+<!-- 左侧：时间线 -->
+
+<div class="timeline-left">
+
+<div class="timeline" id="timeline">
+
+<!-- 当前步骤（初始） -->
+
+<div class="timeline-item current" id="currentStepNode">
+
+<div class="timeline-dot"></div>
+
+<div class="timeline-step-label" id="stepLabel">STEP 1 - 当前任务</div>
+
+<div class="timeline-title" id="stepTitle">{{ result.current_task.task.title }}</div>
+
+<div class="timeline-content" id="stepContent">{{ result.current_task.task.content }}</div>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- 右侧：反馈面板 -->
+
+<div class="timeline-right">
+
+<div class="feedback-panel" id="feedbackPanel">
+
+<div class="feedback-panel-title">执行反馈</div>
+
+<div class="feedback-tags" id="feedbackTags">
+
+<div class="feedback-tag" data-value="已执行，效果明显">效果明显</div>
+
+<div class="feedback-tag" data-value="已执行，无明显改善">无改善</div>
+
+<div class="feedback-tag" data-value="已执行，情况恶化">情况恶化</div>
+
+<div class="feedback-tag" data-value="已执行，遇到困难">遇到困难</div>
+
+<div class="feedback-tag" data-value="已执行，部分完成">部分完成</div>
+
+</div>
+
+<textarea class="feedback-textarea" id="feedbackText" placeholder="补充说明（可选）：执行情况、观察到的变化、遇到的问题..."></textarea>
+
+<button class="submit-btn" id="submitBtn" onclick="completeTask()">
+
+确认完成，获取下一步指导
+
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+{% endif %}
+
+</div>
+
+<!-- 风险 -->
+
+<div class="card">
+
+<div class="section-title">风险分析</div>
+
+<ul style="padding-left:20px;line-height:2;">
+
+{% for r in risk_reasons %}
+
+<li>{{ r }}</li>
+
+{% endfor %}
+
+</ul>
+
+</div>
+
+<!-- 知识库 -->
+
+<div class="card">
+
+<div class="section-title">病害知识库</div>
+
+<p style="margin-bottom:12px;">病害名称：{{ info.name }}</p>
+
+<p>病原菌：{{ info.pathogen }}</p>
+
+</div>
+
+<!-- AI -->
+
+<div class="card">
+
+<div class="section-title">AI农业专家决策</div>
+
+<div class="report">{{ result.advice | markdown | safe }}</div>
+
+</div>
+
+{% endif %}
+
+</div>
+
+{% if result %}
+
+<script>
+
+// ========== 状态管理 ==========
+
+let currentStep = 1;
+let completedSteps = [];
+let selectedFeedback = "";
+let isProcessing = false;
+
+const disease = "{{ result.disease }}";
+const riskLevel = "{{ result.risk_level }}";
+const environment = {{ result.environment|tojson }};
+const totalSteps = {{ result.current_task.total_steps if result.current_task else 3 }};
+
+// ========== 反馈标签点击 ==========
+
+document.querySelectorAll('.feedback-tag').forEach(tag => {
+    tag.addEventListener('click', function() {
+        document.querySelectorAll('.feedback-tag').forEach(t => t.classList.remove('selected'));
+        this.classList.add('selected');
+        selectedFeedback = this.dataset.value;
+    });
+});
+
+// ========== 进度更新 ==========
+
+function updateProgress() {
+    const percent = Math.round((completedSteps.length / totalSteps) * 100);
+    document.getElementById('progressFill').style.width = percent + '%';
+    document.getElementById('progressText').textContent = '步骤 ' + (completedSteps.length + 1) + ' / ' + totalSteps;
+    document.getElementById('progressPercent').textContent = percent + '%';
+}
+
+// ========== 添加已完成步骤到时间线 ==========
+
+function addCompletedStep(title, content, feedback, tips, reasoning) {
+    const timeline = document.getElementById('timeline');
+
+    // 把当前步骤改为已完成
+    const currentNode = document.getElementById('currentStepNode');
+    if (currentNode) {
+        currentNode.classList.remove('current');
+        currentNode.classList.add('completed');
+        currentNode.querySelector('.timeline-step-label').textContent = 'STEP ' + currentStep + ' - 已完成';
+
+        // 添加反馈记录
+        if (feedback) {
+            const feedbackDiv = document.createElement('div');
+            feedbackDiv.className = 'timeline-feedback';
+            feedbackDiv.innerHTML = '农户反馈：' + feedback;
+            currentNode.appendChild(feedbackDiv);
+        }
+    }
+}
+
+// ========== 显示下一步 ==========
+
+function showNextStep(task) {
+    const timeline = document.getElementById('timeline');
+
+    currentStep++;
+
+    // 创建新的当前步骤节点
+    const newStep = document.createElement('div');
+    newStep.className = 'timeline-item current';
+    newStep.id = 'currentStepNode';
+
+    let tipsHtml = '';
+    if (task.tips && task.tips.length > 0) {
+        tipsHtml = '<div class="timeline-tips">';
+        task.tips.forEach(tip => {
+            tipsHtml += '<span class="tip-tag">' + tip + '</span>';
+        });
+        tipsHtml += '</div>';
+    }
+
+    let reasoningHtml = '';
+    if (task.reasoning) {
+        reasoningHtml = '<div class="timeline-reasoning">AI分析：' + task.reasoning + '</div>';
+    }
+
+    newStep.innerHTML = `
+        <div class="timeline-dot"></div>
+        <div class="timeline-step-label">STEP ${currentStep} - 当前任务</div>
+        <div class="timeline-title">${task.title}</div>
+        <div class="timeline-content">${task.content}</div>
+        ${tipsHtml}
+        ${reasoningHtml}
+    `;
+
+    timeline.appendChild(newStep);
+
+    // 滚动到新步骤
+    newStep.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+    updateProgress();
+}
+
+// ========== 完成任务 ==========
+
+function completeTask() {
+    if (isProcessing) return;
+
+    // 获取反馈
+    let feedback = selectedFeedback;
+    const textFeedback = document.getElementById('feedbackText').value.trim();
+    if (textFeedback) {
+        feedback = feedback ? feedback + '；' + textFeedback : textFeedback;
+    }
+    if (!feedback) {
+        feedback = '已执行';
+    }
+
+    isProcessing = true;
+    const submitBtn = document.getElementById('submitBtn');
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="loading-spinner"></span>AI正在分析反馈，生成下一步指导...';
+
+    // 记录当前步骤信息
+    const currentTitle = document.getElementById('stepTitle').textContent;
+    const currentContent = document.getElementById('stepContent').textContent;
+
+    fetch("/next_task", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            disease: disease,
+            risk_level: riskLevel,
+            current_step: currentStep,
+            feedback: feedback,
+            environment: environment,
+            completed_steps: completedSteps
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        // 记录已完成步骤
+        completedSteps.push({
+            title: currentTitle,
+            content: currentContent,
+            feedback: feedback,
+            step: currentStep
+        });
+
+        // 把当前步骤标记为已完成
+        addCompletedStep(currentTitle, currentContent, feedback);
+
+        if (data.finished) {
+            // 流程完成
+            showCompletion();
+            return;
+        }
+
+        // 显示下一步
+        showNextStep(data.task);
+
+        // 重置反馈面板
+        resetFeedback();
+
+        isProcessing = false;
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '确认完成，获取下一步指导';
+    })
+    .catch(err => {
+        console.error('请求失败:', err);
+        isProcessing = false;
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '确认完成，获取下一步指导';
+        alert('网络请求失败，请重试');
+    });
+}
+
+// ========== 重置反馈面板 ==========
+
+function resetFeedback() {
+    selectedFeedback = '';
+    document.querySelectorAll('.feedback-tag').forEach(t => t.classList.remove('selected'));
+    document.getElementById('feedbackText').value = '';
+}
+
+// ========== 显示完成状态 ==========
+
+function showCompletion() {
+    document.getElementById('workflowBox').innerHTML = `
+        <div class="completion-card">
+            <div class="completion-icon">&#10003;</div>
+            <div class="completion-title">农业防治流程已完成</div>
+            <div class="completion-subtitle">
+                共完成 ${completedSteps.length} 个步骤<br>
+                建议继续保持田间巡查与环境监测<br>
+                如有新情况可重新上传图片进行诊断
+            </div>
+        </div>
+    `;
+}
+
+// 初始化进度
+updateProgress();
+
+</script>
+
+{% endif %}
+
+</body>
+
+</html>

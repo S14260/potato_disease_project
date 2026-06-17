@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}历史记录 - 智慧农业病害诊断平台{% endblock %}
+{% block topbar_title %}历史记录{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">历史记录</h1>
+    <p class="page-desc">查看历史诊断记录和处理状态</p>
+</div>
+
+<!-- 筛选栏 -->
+<div class="card mb-6">
+    <div class="card-body">
+        <form method="get" style="display:flex;gap:12px;align-items:end;">
+            <div class="form-group" style="margin-bottom:0;flex:1;">
+                <label class="form-label">病害类型</label>
+                <select name="disease" class="form-select">
+                    <option value="">全部</option>
+                    <option value="early_blight" {% if filter_disease == 'early_blight' %}selected{% endif %}>早疫病</option>
+                    <option value="late_blight" {% if filter_disease == 'late_blight' %}selected{% endif %}>晚疫病</option>
+                </select>
+            </div>
+            <div class="form-group" style="margin-bottom:0;flex:1;">
+                <label class="form-label">风险等级</label>
+                <select name="risk" class="form-select">
+                    <option value="">全部</option>
+                    <option value="高风险" {% if filter_risk == '高风险' %}selected{% endif %}>高风险</option>
+                    <option value="中风险" {% if filter_risk == '中风险' %}selected{% endif %}>中风险</option>
+                    <option value="低风险" {% if filter_risk == '低风险' %}selected{% endif %}>低风险</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-secondary">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                筛选
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- 记录表格 -->
+<div class="card">
+    <div class="card-body" style="padding:0;">
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>时间</th>
+                        <th>病害类型</th>
+                        <th>风险等级</th>
+                        <th>风险评分</th>
+                        <th>检测数量</th>
+                        <th>地区</th>
+                        <th>状态</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for record in records %}
+                    <tr>
+                        <td class="font-mono" style="font-size:12px;">{{ record.time }}</td>
+                        <td>{{ record.disease_name }}</td>
+                        <td><span class="tag {{ record.risk_class }}">{{ record.risk_level }}</span></td>
+                        <td class="font-mono">{{ record.risk_score }}</td>
+                        <td>{{ record.detection_count }}处</td>
+                        <td>{{ record.location }}</td>
+                        <td><span class="tag tag-green">已完成</span></td>
+                    </tr>
+                    {% endfor %}
+                    {% if not records %}
+                    <tr>
+                        <td colspan="7">
+                            <div class="empty-state" style="padding:32px;">
+                                <div class="empty-state-title">暂无诊断记录</div>
+                                <div class="empty-state-desc">请先进行病害诊断</div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

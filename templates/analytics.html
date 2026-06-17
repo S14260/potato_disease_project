@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+
+{% block title %}数据分析 - 智慧农业病害诊断平台{% endblock %}
+{% block topbar_title %}数据分析{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">数据分析</h1>
+    <p class="page-desc">病害趋势、风险分布、环境关联分析</p>
+</div>
+
+<!-- 统计卡片 -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-card-header">
+            <span class="stat-card-label">总诊断次数</span>
+            <div class="stat-card-icon blue">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/></svg>
+            </div>
+        </div>
+        <div class="stat-card-value">{{ stats.total }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-card-header">
+            <span class="stat-card-label">早疫病占比</span>
+            <div class="stat-card-icon green">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>
+            </div>
+        </div>
+        <div class="stat-card-value">{{ stats.early_pct }}%</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-card-header">
+            <span class="stat-card-label">晚疫病占比</span>
+            <div class="stat-card-icon orange">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>
+            </div>
+        </div>
+        <div class="stat-card-value">{{ stats.late_pct }}%</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-card-header">
+            <span class="stat-card-label">平均风险评分</span>
+            <div class="stat-card-icon red">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/></svg>
+            </div>
+        </div>
+        <div class="stat-card-value">{{ stats.avg_score }}</div>
+    </div>
+</div>
+
+<!-- 图表 -->
+<div class="grid grid-2 mb-6">
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title">病害类型分布</span>
+        </div>
+        <div class="card-body">
+            <div class="chart-container" style="height:300px;">
+                <canvas id="diseaseChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title">风险等级分布</span>
+        </div>
+        <div class="card-body">
+            <div class="chart-container" style="height:300px;">
+                <canvas id="riskChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-6">
+    <div class="card-header">
+        <span class="card-title">风险评分趋势</span>
+    </div>
+    <div class="card-body">
+        <div class="chart-container" style="height:300px;">
+            <canvas id="trendChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- 详细记录 -->
+<div class="card">
+    <div class="card-header">
+        <span class="card-title">诊断记录明细</span>
+    </div>
+    <div class="card-body" style="padding:0;">
+        <table>
+            <thead>
+                <tr>
+                    <th>时间</th>
+                    <th>病害</th>
+                    <th>风险等级</th>
+                    <th>评分</th>
+                    <th>温度</th>
+                    <th>湿度</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in records %}
+                <tr>
+                    <td class="font-mono" style="font-size:12px;">{{ r.time }}</td>
+                    <td>{{ r.disease_name }}</td>
+                    <td><span class="tag {{ r.risk_class }}">{{ r.risk_level }}</span></td>
+                    <td class="font-mono">{{ r.risk_score }}</td>
+                    <td>{{ r.temperature }}℃</td>
+                    <td>{{ r.humidity }}%</td>
+                </tr>
+                {% endfor %}
+                {% if not records %}
+                <tr>
+                    <td colspan="6" class="text-center text-muted" style="padding:32px;">暂无数据</td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 病害分布饼图
+    new Chart(document.getElementById('diseaseChart').getContext('2d'), {
+        type: 'doughnut',
+        data: {
+            labels: ['早疫病', '晚疫病'],
+            datasets: [{
+                data: [{{ stats.early_count }}, {{ stats.late_count }}],
+                backgroundColor: ['#f59e0b', '#3b82f6'],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { position: 'bottom', labels: { padding: 16, usePointStyle: true } } },
+            cutout: '60%'
+        }
+    });
+
+    // 风险分布柱状图
+    new Chart(document.getElementById('riskChart').getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels: ['低风险', '中风险', '高风险'],
+            datasets: [{
+                data: [{{ stats.low_count }}, {{ stats.mid_count }}, {{ stats.high_count }}],
+                backgroundColor: ['#22c55e', '#f59e0b', '#ef4444'],
+                borderRadius: 4,
+                barThickness: 40
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: '#f1f5f9' } },
+                x: { grid: { display: false } }
+            }
+        }
+    });
+
+    // 趋势折线图
+    new Chart(document.getElementById('trendChart').getContext('2d'), {
+        type: 'line',
+        data: {
+            labels: {{ trend_labels | tojson }},
+            datasets: [{
+                label: '风险评分',
+                data: {{ trend_scores | tojson }},
+                borderColor: '#16a34a',
+                backgroundColor: 'rgba(22,163,74,0.1)',
+                fill: true,
+                tension: 0.3,
+                pointRadius: 4,
+                pointBackgroundColor: '#16a34a'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { beginAtZero: true, max: 100, grid: { color: '#f1f5f9' } },
+                x: { grid: { display: false }, ticks: { maxRotation: 45 } }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

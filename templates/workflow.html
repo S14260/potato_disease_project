@@ -1,0 +1,269 @@
+{% extends "base.html" %}
+
+{% block title %}防治工作流 - 智慧农业病害诊断平台{% endblock %}
+{% block topbar_title %}防治工作流{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">防治工作流</h1>
+    <p class="page-desc">基于 SOP 标准流程的动态防治方案，根据反馈自动调整</p>
+</div>
+
+{% if not disease %}
+<!-- 无参数时提示 -->
+<div class="card">
+    <div class="card-body">
+        <div class="empty-state">
+            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="10"/></svg>
+            <div class="empty-state-title">暂无进行中的工作流</div>
+            <div class="empty-state-desc">请先进行病害诊断，系统将自动生成防治工作流</div>
+            <a href="/diagnosis" class="btn btn-primary mt-4">前往诊断</a>
+        </div>
+    </div>
+</div>
+
+{% else %}
+
+<!-- 步骤导航条 -->
+<div class="card mb-6">
+    <div class="card-body">
+        <div style="display:flex;align-items:center;gap:8px;overflow-x:auto;padding:4px 0;">
+            {% for step in sop_steps %}
+            <div style="display:flex;align-items:center;gap:8px;white-space:nowrap;">
+                <div id="stepNav{{ loop.index }}" style="width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;
+                    {% if loop.index == 1 %}background:var(--primary);color:white;
+                    {% else %}background:var(--bg-main);color:var(--text-muted);border:1px solid var(--border);{% endif %}">
+                    {{ loop.index }}
+                </div>
+                <span id="stepNavLabel{{ loop.index }}" style="font-size:13px;{% if loop.index == 1 %}color:var(--text-primary);font-weight:500;{% else %}color:var(--text-muted);{% endif %}">{{ step.title }}</span>
+                {% if not loop.last %}
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<div class="grid grid-2" style="grid-template-columns:1fr 360px;">
+    <!-- 左侧：当前步骤 -->
+    <div>
+        <div class="card mb-4">
+            <div class="card-header">
+                <span class="card-title">当前步骤</span>
+                <span class="tag tag-blue" id="stepCounter">步骤 1 / {{ sop_steps|length }}</span>
+            </div>
+            <div class="card-body">
+                <div id="currentStepArea">
+                    <h3 id="stepTitle" style="font-size:18px;font-weight:600;margin-bottom:12px;">{{ sop_steps[0].title }}</h3>
+                    <p id="stepContent" style="font-size:14px;color:var(--text-secondary);line-height:1.8;">{{ sop_steps[0].content }}</p>
+                    <div id="stepTips" style="margin-top:12px;display:flex;flex-wrap:wrap;gap:6px;"></div>
+                    <div id="stepReasoning" style="margin-top:12px;padding:10px 14px;background:var(--info-bg);border-radius:var(--radius);font-size:13px;color:var(--info);display:none;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 已完成步骤 -->
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">执行记录</span>
+            </div>
+            <div class="card-body" id="completedSteps">
+                <div class="empty-state" style="padding:24px;">
+                    <div class="empty-state-desc">暂无执行记录，请完成当前步骤后提交反馈</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 右侧：反馈面板 -->
+    <div>
+        <div class="card" style="position:sticky;top:72px;">
+            <div class="card-header">
+                <span class="card-title">执行反馈</span>
+            </div>
+            <div class="card-body">
+                <div style="font-size:13px;color:var(--text-muted);margin-bottom:12px;">请选择执行效果</div>
+                <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px;" id="feedbackTags">
+                    <button class="btn btn-secondary btn-sm feedback-tag" data-value="已执行，效果明显">效果明显</button>
+                    <button class="btn btn-secondary btn-sm feedback-tag" data-value="已执行，无明显改善">无改善</button>
+                    <button class="btn btn-secondary btn-sm feedback-tag" data-value="已执行，情况恶化">情况恶化</button>
+                    <button class="btn btn-secondary btn-sm feedback-tag" data-value="已执行，遇到困难">遇到困难</button>
+                    <button class="btn btn-secondary btn-sm feedback-tag" data-value="已执行，部分完成">部分完成</button>
+                </div>
+                <textarea id="feedbackText" class="form-input" placeholder="补充说明（可选）：执行情况、观察到的变化..." style="margin-bottom:16px;"></textarea>
+                <button class="btn btn-primary" style="width:100%;" id="submitFeedback" onclick="submitStep()">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 7-7 7 7"/><path d="M12 19V5"/></svg>
+                    提交反馈，获取下一步
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+{% if disease %}
+const disease = "{{ disease }}";
+const riskLevel = "{{ risk_level }}";
+const environment = {{ environment | tojson }};
+const sopSteps = {{ sop_steps | tojson }};
+let currentStep = 1;
+let completedSteps = [];
+let selectedFeedback = "";
+let isProcessing = false;
+
+// 反馈标签点击
+document.querySelectorAll('.feedback-tag').forEach(function(tag) {
+    tag.addEventListener('click', function() {
+        document.querySelectorAll('.feedback-tag').forEach(function(t) {
+            t.classList.remove('btn-primary');
+            t.classList.add('btn-secondary');
+        });
+        this.classList.remove('btn-secondary');
+        this.classList.add('btn-primary');
+        selectedFeedback = this.dataset.value;
+    });
+});
+
+function submitStep() {
+    if (isProcessing) return;
+
+    var feedback = selectedFeedback;
+    var textFeedback = document.getElementById('feedbackText').value.trim();
+    if (textFeedback) {
+        feedback = feedback ? feedback + '；' + textFeedback : textFeedback;
+    }
+    if (!feedback) feedback = '已执行';
+
+    isProcessing = true;
+    var btn = document.getElementById('submitFeedback');
+    btn.disabled = true;
+    btn.innerHTML = '<div class="spinner" style="width:16px;height:16px;border-width:2px;"></div> AI 分析中...';
+
+    var currentTitle = document.getElementById('stepTitle').textContent;
+    var currentContent = document.getElementById('stepContent').textContent;
+
+    fetch("/next_task", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            disease: disease,
+            risk_level: riskLevel,
+            current_step: currentStep,
+            feedback: feedback,
+            environment: environment,
+            completed_steps: completedSteps
+        })
+    })
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+        completedSteps.push({
+            title: currentTitle,
+            content: currentContent,
+            feedback: feedback,
+            step: currentStep
+        });
+
+        addCompletedStep(currentTitle, currentContent, feedback);
+
+        if (data.finished) {
+            showCompletion();
+            return;
+        }
+
+        currentStep++;
+        showNextStep(data.task);
+        resetFeedback();
+
+        isProcessing = false;
+        btn.disabled = false;
+        btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 7-7 7 7"/><path d="M12 19V5"/></svg> 提交反馈，获取下一步';
+    })
+    .catch(function(err) {
+        console.error('请求失败:', err);
+        isProcessing = false;
+        btn.disabled = false;
+        btn.innerHTML = '提交反馈，获取下一步';
+        alert('请求失败，请重试');
+    });
+}
+
+function addCompletedStep(title, content, feedback) {
+    var container = document.getElementById('completedSteps');
+    if (container.querySelector('.empty-state')) {
+        container.innerHTML = '';
+    }
+
+    var html = '<div style="padding:12px;background:var(--success-bg);border-radius:var(--radius);margin-bottom:8px;border-left:3px solid var(--success);">' +
+        '<div style="font-size:13px;font-weight:600;color:var(--success);margin-bottom:4px;">步骤 ' + completedSteps.length + '：' + title + '</div>' +
+        '<div style="font-size:12px;color:var(--text-muted);">反馈：' + feedback + '</div>' +
+        '</div>';
+    container.insertAdjacentHTML('afterbegin', html);
+}
+
+function showNextStep(task) {
+    document.getElementById('stepTitle').textContent = task.title;
+    document.getElementById('stepContent').textContent = task.content;
+    document.getElementById('stepCounter').textContent = '步骤 ' + currentStep + ' / ' + sopSteps.length;
+
+    var tipsEl = document.getElementById('stepTips');
+    tipsEl.innerHTML = '';
+    if (task.tips && task.tips.length > 0) {
+        task.tips.forEach(function(tip) {
+            tipsEl.innerHTML += '<span class="tag tag-blue">' + tip + '</span>';
+        });
+    }
+
+    var reasoningEl = document.getElementById('stepReasoning');
+    if (task.reasoning) {
+        reasoningEl.textContent = 'AI 分析：' + task.reasoning;
+        reasoningEl.style.display = 'block';
+    } else {
+        reasoningEl.style.display = 'none';
+    }
+
+    // 更新步骤导航
+    for (var i = 1; i <= sopSteps.length; i++) {
+        var nav = document.getElementById('stepNav' + i);
+        var label = document.getElementById('stepNavLabel' + i);
+        if (i < currentStep) {
+            nav.style.background = 'var(--success)';
+            nav.style.color = 'white';
+            nav.style.border = 'none';
+            label.style.color = 'var(--text-muted)';
+            label.style.fontWeight = 'normal';
+        } else if (i === currentStep) {
+            nav.style.background = 'var(--primary)';
+            nav.style.color = 'white';
+            nav.style.border = 'none';
+            label.style.color = 'var(--text-primary)';
+            label.style.fontWeight = '500';
+        }
+    }
+}
+
+function resetFeedback() {
+    selectedFeedback = '';
+    document.querySelectorAll('.feedback-tag').forEach(function(t) {
+        t.classList.remove('btn-primary');
+        t.classList.add('btn-secondary');
+    });
+    document.getElementById('feedbackText').value = '';
+}
+
+function showCompletion() {
+    document.querySelector('.grid').innerHTML = '<div class="card" style="grid-column:1/-1;">' +
+        '<div class="card-body" style="text-align:center;padding:48px;">' +
+        '<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>' +
+        '<h3 style="font-size:20px;color:var(--success);margin:16px 0 8px;">防治流程已完成</h3>' +
+        '<p style="color:var(--text-muted);">共完成 ' + completedSteps.length + ' 个步骤，建议继续保持田间巡查</p>' +
+        '<a href="/diagnosis" class="btn btn-primary mt-4">重新诊断</a>' +
+        '</div></div>';
+}
+{% endif %}
+</script>
+{% endblock %}

@@ -1,0 +1,219 @@
+{% extends "base.html" %}
+
+{% block title %}数据看板 - 智慧农业病害诊断平台{% endblock %}
+{% block topbar_title %}数据看板{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">数据看板</h1>
+    <p class="page-desc">马铃薯病害诊断系统运行概览</p>
+</div>
+
+<!-- 统计卡片 -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-card-header">
+            <span class="stat-card-label">今日诊断</span>
+            <div class="stat-card-icon blue">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+            </div>
+        </div>
+        <div class="stat-card-value" id="statToday">{{ stats.today }}</div>
+        <div class="stat-card-change up">今日累计</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-card-header">
+            <span class="stat-card-label">累计诊断</span>
+            <div class="stat-card-icon green">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+            </div>
+        </div>
+        <div class="stat-card-value" id="statTotal">{{ stats.total }}</div>
+        <div class="stat-card-change up">持续增长</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-card-header">
+            <span class="stat-card-label">高风险病害</span>
+            <div class="stat-card-icon red">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+            </div>
+        </div>
+        <div class="stat-card-value" id="statHighRisk">{{ stats.high_risk }}</div>
+        <div class="stat-card-change">需重点关注</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-card-header">
+            <span class="stat-card-label">待处理任务</span>
+            <div class="stat-card-icon orange">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="10"/></svg>
+            </div>
+        </div>
+        <div class="stat-card-value" id="statPending">{{ stats.pending }}</div>
+        <div class="stat-card-change">工作流进行中</div>
+    </div>
+</div>
+
+<!-- 图表区 -->
+<div class="grid grid-2 mb-6">
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title">病害类型分布</span>
+        </div>
+        <div class="card-body">
+            <div class="chart-container" style="height:280px;">
+                <canvas id="diseaseChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title">风险等级分布</span>
+        </div>
+        <div class="card-body">
+            <div class="chart-container" style="height:280px;">
+                <canvas id="riskChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 最近诊断记录 -->
+<div class="card mb-6">
+    <div class="card-header">
+        <span class="card-title">最近诊断记录</span>
+        <a href="/history" class="btn btn-sm btn-secondary">查看全部</a>
+    </div>
+    <div class="card-body" style="padding:0;">
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>时间</th>
+                        <th>病害类型</th>
+                        <th>风险等级</th>
+                        <th>风险评分</th>
+                        <th>检测数量</th>
+                        <th>状态</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for record in recent_records %}
+                    <tr>
+                        <td class="font-mono">{{ record.time }}</td>
+                        <td>{{ record.disease_name }}</td>
+                        <td><span class="tag {{ record.risk_class }}">{{ record.risk_level }}</span></td>
+                        <td class="font-mono">{{ record.risk_score }}</td>
+                        <td>{{ record.detection_count }}处</td>
+                        <td><span class="tag tag-green">已完成</span></td>
+                    </tr>
+                    {% endfor %}
+                    {% if not recent_records %}
+                    <tr>
+                        <td colspan="6" class="text-center text-muted" style="padding:32px;">暂无诊断记录，请先进行病害诊断</td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- AI 分析摘要 -->
+<div class="card">
+    <div class="card-header">
+        <span class="card-title">AI 分析摘要</span>
+    </div>
+    <div class="card-body">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+            <div style="padding:16px;background:var(--bg-main);border-radius:var(--radius-md);">
+                <div style="font-size:13px;color:var(--text-muted);margin-bottom:8px;">主要病害</div>
+                <div style="font-size:15px;font-weight:600;color:var(--text-primary);">{{ stats.main_disease or '暂无数据' }}</div>
+            </div>
+            <div style="padding:16px;background:var(--bg-main);border-radius:var(--radius-md);">
+                <div style="font-size:13px;color:var(--text-muted);margin-bottom:8px;">平均风险评分</div>
+                <div style="font-size:15px;font-weight:600;color:var(--text-primary);">{{ stats.avg_score or '--' }}</div>
+            </div>
+            <div style="padding:16px;background:var(--bg-main);border-radius:var(--radius-md);">
+                <div style="font-size:13px;color:var(--text-muted);margin-bottom:8px;">检测模型</div>
+                <div style="font-size:15px;font-weight:600;color:var(--text-primary);">YOLOv8n</div>
+            </div>
+            <div style="padding:16px;background:var(--bg-main);border-radius:var(--radius-md);">
+                <div style="font-size:13px;color:var(--text-muted);margin-bottom:8px;">AI 模型</div>
+                <div style="font-size:15px;font-weight:600;color:var(--text-primary);">mimo-v2.5-pro</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 病害类型分布饼图
+    const diseaseCtx = document.getElementById('diseaseChart').getContext('2d');
+    new Chart(diseaseCtx, {
+        type: 'doughnut',
+        data: {
+            labels: {{ disease_labels | tojson }},
+            datasets: [{
+                data: {{ disease_counts | tojson }},
+                backgroundColor: ['#22c55e', '#f59e0b', '#ef4444', '#3b82f6'],
+                borderWidth: 0,
+                hoverOffset: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: { padding: 16, usePointStyle: true, pointStyleWidth: 8, font: { size: 12 } }
+                }
+            },
+            cutout: '60%'
+        }
+    });
+
+    // 风险等级分布柱状图
+    const riskCtx = document.getElementById('riskChart').getContext('2d');
+    new Chart(riskCtx, {
+        type: 'bar',
+        data: {
+            labels: ['低风险', '中风险', '高风险'],
+            datasets: [{
+                label: '诊断次数',
+                data: {{ risk_counts | tojson }},
+                backgroundColor: ['#22c55e', '#f59e0b', '#ef4444'],
+                borderRadius: 4,
+                borderSkipped: false,
+                barThickness: 40
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { stepSize: 1, font: { size: 12 } },
+                    grid: { color: '#f1f5f9' }
+                },
+                x: {
+                    grid: { display: false },
+                    ticks: { font: { size: 12 } }
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}
