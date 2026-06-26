@@ -1,12 +1,20 @@
 from openai import OpenAI
+import os
+
+# 从 .env 加载环境变量
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
 
 
 # ===============================
 # DeepSeek API
 # ===============================
 client = OpenAI(
-    api_key="sk-2f9d0b63be8b4b428f3b04c2d61a7211",
-    base_url="https://api.deepseek.com"
+    api_key=os.getenv("DEEPSEEK_API_KEY"),
+    base_url=os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com"),
 )
 
 

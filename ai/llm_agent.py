@@ -4,9 +4,16 @@ import csv
 from ai.rag_retriever import retrieve_pesticide
 import os
 
+# 从 .env 加载环境变量
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
+
 client = OpenAI(
-    api_key="tp-c2rtlxwsq7sgmt1r32ijnuswqgvoof4gurdjh8qwtufcbmjo",
-    base_url="https://token-plan-cn.xiaomimimo.com/v1"
+    api_key=os.getenv("DEEPSEEK_API_KEY"),
+    base_url=os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com"),
 )
 
 
@@ -137,7 +144,7 @@ def generate_advice(label, environment=None, history=None):
 """
 
     response = client.chat.completions.create(
-        model="mimo-v2.5-pro",
+        model="deepseek-chat",
         messages=[
             {"role": "system", "content": "农业植保专家"},
             {"role": "user", "content": prompt}
@@ -208,7 +215,7 @@ def generate_workflow_step(
 
     try:
         response = client.chat.completions.create(
-            model="mimo-v2.5-pro",
+            model="deepseek-chat",
             messages=[
                 {"role": "system", "content": "你是农业植保专家。你必须只返回一个合法的JSON对象，不要返回任何其他文字、解释或markdown格式。"},
                 {"role": "user", "content": prompt}

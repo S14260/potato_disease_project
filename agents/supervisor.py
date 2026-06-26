@@ -1,13 +1,21 @@
 import json
+import os
 from langchain_openai import ChatOpenAI
 from langchain_core.messages import HumanMessage, SystemMessage
+
+# 从 .env 加载环境变量
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
 
 
 def create_llm():
     return ChatOpenAI(
-        model="mimo-v2.5-pro",
-        base_url="https://token-plan-cn.xiaomimimo.com/v1",
-        api_key="tp-c2rtlxwsq7sgmt1r32ijnuswqgvoof4gurdjh8qwtufcbmjo",
+        model="deepseek-chat",
+        base_url=os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com"),
+        api_key=os.getenv("DEEPSEEK_API_KEY"),
         temperature=0.7,
         max_tokens=2000,
     )

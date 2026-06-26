@@ -1,7 +1,14 @@
 import requests
+import os
 
+# 从 .env 加载环境变量
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
 
-API_KEY = "50292894f8b4218d1d0b96581337944d"
+API_KEY = os.getenv("OPENWEATHER_API_KEY", "")
 
 
 def get_weather(city):
