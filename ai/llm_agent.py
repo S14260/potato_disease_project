@@ -58,7 +58,7 @@ def calculate_risk(env):
 # =========================
 # 4. 主函数
 # =========================
-def generate_advice(label, environment=None):
+def generate_advice(label, environment=None, history=None):
 
     start = time.time()
 
@@ -99,6 +99,20 @@ def generate_advice(label, environment=None):
     env_text = build_environment_text(environment)
     risk = calculate_risk(environment)
 
+    # ===== 构造历史上下文 =====
+    history_text = ""
+    if history:
+        history_text = "\n\n【历史诊断记录】\n"
+        for i, h in enumerate(history):
+            history_text += (
+                f"第{i+1}次: {h.get('disease_name', h.get('disease', '未知'))} "
+                f"| 风险: {h.get('risk_level', '未知')} "
+                f"| 城市: {h.get('city', '未知')} "
+                f"| 温度: {h.get('temperature', '?')}℃ "
+                f"| 湿度: {h.get('humidity', '?')}%\n"
+            )
+        history_text += "请在回答中参考历史诊断，注意病情变化趋势。"
+
     prompt = f"""
 作物病害：{disease_id}
 
@@ -108,6 +122,7 @@ def generate_advice(label, environment=None):
 
 农药信息：
 {product_text}
+{history_text}
 
 请生成规范防治建议：
 

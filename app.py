@@ -4,7 +4,8 @@ from flask import (
     request,
     jsonify,
     redirect,
-    url_for
+    url_for,
+    session,
 )
 
 import os
@@ -15,13 +16,14 @@ from datetime import datetime
 
 from werkzeug.utils import secure_filename
 
-from agents.supervisor import run_diagnosis_pipeline, run_agent_pipeline_with_trace
+from agents.supervisor import run_diagnosis_pipeline, run_agent_pipeline_with_trace, run_langgraph_pipeline
 from engine.workflow_engine import generate_next_task
 from knowledge.disease_db import disease_db
 from knowledge.pesticide_db import pesticide_db
 from knowledge.sop_db import get_sop
 
 app = Flask(__name__)
+app.secret_key = "potato-disease-session-key"
 
 UPLOAD_FOLDER = "static/uploads"
 RESULTS_FOLDER = "static/results"
@@ -264,6 +266,65 @@ def agent_diagnosis():
 
     except Exception as e:
         print("Agent diagnosis error:", e)
+        return jsonify({"error": f"系统错误: {str(e)}"}), 500
+
+
+@app.route("/api/langgraph_diagnosis", methods=["POST"])
+def langgraph_diagnosis():
+    """LangGraph StateGraph diagnosis API endpoint.
+
+    与 /api/agent_diagnosis 的区别：使用原生 StateGraph 实现，
+    支持 Checkpointer 状态持久化，同一 session 自动关联历史诊断。
+    """
+    file = request.files.get("file")
+    if not file or file.filename == "":
+        return jsonify({"error": "请上传图片"}), 400
+
+    try:
+        location = request.form.get("location", "Beijing")
+        growth_stage = request.form.get("growth_stage", "vegetative")
+
+        filename = secure_filename(file.filename)
+        upload_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+        file.save(upload_path)
+
+        # 用 session 管理 thread_id：同一浏览器自动关联历史诊断
+        thread_id = request.form.get("thread_id")
+        if not thread_id:
+            if "thread_id" not in session:
+                import uuid
+                session["thread_id"] = f"session-{uuid.uuid4().hex[:8]}"
+            thread_id = session["thread_id"]
+
+        result = run_langgraph_pipeline(
+            image_path=upload_path,
+            location=location,
+            growth_stage=growth_stage,
+            thread_id=thread_id,
+        )
+
+        # 保存历史
+        env = result.get("environment", {})
+        info = result.get("info", {})
+        record = {
+            "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "disease": result.get("disease", ""),
+            "disease_name": info.get("name", result.get("disease", "")),
+            "risk_level": result.get("risk_level", ""),
+            "risk_score": result.get("risk_score", 0),
+            "detection_count": len(result.get("detections", [])),
+            "location": location,
+            "growth_stage": growth_stage,
+            "temperature": env.get("temperature", ""),
+            "humidity": env.get("humidity", ""),
+            "mode": "langgraph",
+        }
+        append_history(record)
+
+        return jsonify({"success": True, "result": result})
+
+    except Exception as e:
+        print("LangGraph diagnosis error:", e)
         return jsonify({"error": f"系统错误: {str(e)}"}), 500
 
 

@@ -400,3 +400,30 @@ def run_agent_pipeline_with_trace(
             "agents_involved": agents_involved,
         },
     }
+
+
+# ============================================================
+# LangGraph StateGraph 模式：原生 StateGraph 实现
+# 展示 LangGraph 核心概念，适合学习和面试
+# ============================================================
+
+def run_langgraph_pipeline(
+    image_path: str,
+    location: str,
+    growth_stage: str,
+    thread_id: str = "default",
+):
+    """运行 LangGraph StateGraph 诊断流程。
+
+    与 run_diagnosis_pipeline 的区别：
+    - 使用原生 StateGraph 而非手动编排
+    - 支持 Checkpointer 状态持久化
+    - 展示 Node / Edge / Conditional Edge 概念
+    """
+    from agents.langgraph_diagnosis import run_langgraph_diagnosis
+    return run_langgraph_diagnosis(
+        image_path=image_path,
+        city=location,
+        growth_stage=growth_stage,
+        thread_id=thread_id,
+    )
