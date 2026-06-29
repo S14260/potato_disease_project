@@ -23,6 +23,8 @@ Flask Web App（10 个路由）
                                      END
 ```
 
+![系统架构总览](docs/项目架构图/01_多Agent架构总览.png)
+
 ### 三种运行模式
 
 | 模式 | 实现方式 | 响应时间 | 特点 |
@@ -30,6 +32,14 @@ Flask Web App（10 个路由）
 | **快速模式** | 直接函数调用 + LLM 报告 | < 5s | 默认模式，单次 LLM 调用，性能优先 |
 | **Supervisor 模式** | `langgraph_supervisor` 编排三个 ReAct Agent | ~15s | LLM 自主决策工具调用顺序，完整 Function Calling 链路 |
 | **StateGraph 模式** | 原生 `StateGraph` + `Checkpointer` | ~10s | 开发者定义图结构，条件边分支 + 多轮对话记忆 |
+
+**Supervisor 模式** — 三个 ReAct Agent 协作流程：
+
+![Multi-Agent 协作流程](docs/项目架构图/06_Multi-Agent协作流程.png)
+
+**StateGraph 模式** — 原生图结构执行流程：
+
+![StateGraph 执行流程](docs/项目架构图/03_LangGraph和StateGraph执行流程.png)
 
 ### 多轮对话
 
@@ -140,6 +150,8 @@ Supervisor 协调器将任务分派给三个专业 Agent：诊断 Agent（YOLO +
 
 `engine/decision_engine.py` — 多因子加权评分（0-100 分），四维度叠加：
 
+![风险评分引擎](docs/项目架构图/05_风险评分引擎仪表盘.png)
+
 | 因子 | 权重上限 | 评分规则 |
 |------|---------|---------|
 | 病斑数量 | +40 | 20+处: +40, 10-19处: +25, 5-9处: +15 |
@@ -152,6 +164,8 @@ Supervisor 协调器将任务分派给三个专业 Agent：诊断 Agent（YOLO +
 ### RAG 知识检索
 
 `rag/` 目录 — ChromaDB + bge-small-zh-v1.5 中文 Embedding：
+
+![RAG 检索增强生成流程](docs/项目架构图/04_RAG检索增强生成流程.png)
 
 - **数据入库**（`rag/ingest.py`）：将病害信息、农药数据、SOP 流程三类知识写入 ChromaDB，每条文档附带 metadata（`disease_id`、`type`）
 - **语义检索**（`rag/retriever.py`）：`search_knowledge_base(query, doc_type, disease_id, top_k)` 支持自然语言查询 + metadata 过滤
